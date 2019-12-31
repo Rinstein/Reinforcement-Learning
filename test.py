@@ -1,19 +1,25 @@
 import gym,time
 from algorithms.DQN import DQN
 #env = gym.make('AirRaid-v0')
-#env = gym.make('Breakout-v0')
-env = gym.make('CartPole-v0')
+env = gym.make('Breakout-v0')
+#env = gym.make('CartPole-v0')
+#env = gym.make('MountainCar-v0')
 
 #获取观测的尺寸
 observation_space = env.observation_space.shape
 #获取动作的个数，在gym中，动作均是有数字指代
 action_space = env.action_space.n
 
-brain = DQN(observation_space,action_space,env_name=str(env.env),net_mode='fc')
-for i_episode in range(10000):
+brain = DQN(observation_space,action_space,env_name=str(env.env),net_mode='conv')
+brain.load_model()
+i_episode = 0
+while True:
+    i_episode = i_episode + 1
     observation = env.reset()
     sum_r = 0
-    for t in range(10000):
+    t = 0
+    while True:
+        t = t + 1
         #time.sleep(1)
         env.render()
         #action = env.action_space.sample()

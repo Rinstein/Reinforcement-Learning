@@ -20,10 +20,10 @@ class DQN():
         self.exp_pool = [None]*self.exp_max_size
 
         #训练参数
-        self.train_start_step = 100
-        self.train_batch = 32
+        self.train_start_step = 1000
+        self.train_batch = 64
         self.train_step = 0
-        self.train_interval = 10
+        self.train_interval = 300
         self.train_replace_target = 100
 
         #Q网络
