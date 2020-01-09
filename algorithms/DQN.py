@@ -53,6 +53,7 @@ class DQN():
         #这里首先构建简单的卷积神经网络
         model = models.Sequential()
         model.add(layers.Conv2D(16,(3,3),input_shape=self.input_space))
+        model.add(layers.MaxPool2D(pool_size=(2, 2)))
         model.add(layers.Activation('relu'))
         model.add(layers.Conv2D(16,(3,3)))
         model.add(layers.Activation('relu'))
@@ -73,7 +74,7 @@ class DQN():
         #这里首先构建简单的卷积神经网络
         model = models.Sequential()
         model.add(layers.Dense(32,activation='relu',input_shape=self.input_space))
-        model.add(layers.Dropout(0.5))
+        #model.add(layers.Dropout(0.5))
         # model.add(layers.Dense(32,activation='relu'))
         # model.add(layers.Dropout(0.5))
         model.add(layers.Dense(16, activation='relu'))
@@ -85,10 +86,13 @@ class DQN():
 
     def store_exp(self,state,action,state_,reward,done):
         #注意进行归一化处理
-        self.exp_pool[self.exp_count%self.exp_max_size] = [np.array(state)/255,action,np.array(state_)/255,reward,done]
+        if self.net_mode == 'conv':
+            self.exp_pool[self.exp_count%self.exp_max_size] = [np.array(state)/255,action,np.array(state_)/255,reward,done]
+        else:
+            self.exp_pool[self.exp_count%self.exp_max_size] = [np.array(state),action,np.array(state_),reward,done]
         self.exp_count = self.exp_count+1
 
-        if self.exp_count>self.train_start_step and self.exp_count%self.train_interval==0:
+        if (self.exp_count>self.train_start_step) and (self.exp_count%self.train_interval==0):
             self.train()
             print('#train step= '+str(self.train_step))
             #print('#pool_size= '+str(self.exp_count))
@@ -106,7 +110,7 @@ class DQN():
             #计算更新yi
             r = t[3]
             if not t[4]:
-                r = r + self.gamma*max(self.target_net.predict([[t[0]]])[0])
+                r = r + self.gamma*max(self.target_net.predict([[t[2]]])[0])
             y = self.q_net.predict([[t[0]]])[0]
             y[t[1]] = r
             yi.append(y)
@@ -120,9 +124,12 @@ class DQN():
         # y[dataset[0][1]] = r
         # print(y)
 
-        metrics = self.q_net.train_on_batch([input_data],[yi])
-        if self.train_step % 20 == 0:
-            print("  loss= "+str(metrics))
+        #metrics = self.q_net.train_on_batch([input_data],[yi])
+        metrics = self.q_net.fit([input_data],[yi],epochs=1)
+        #print(input_data,'----',yi)
+
+        #if self.train_step % 20 == 0:
+        print("  loss= "+str(metrics))
         # time.sleep(2)
         self.train_step = self.train_step + 1
         #一段训练时间进行网络参数替换
@@ -139,6 +146,7 @@ class DQN():
     def load_model(self):
         self.q_net = models.load_model('./models/'+self.env_name+'_q_net.h5')
         self.target_net = models.load_model('./models/'+self.env_name+'_target_net.h5')
+        print('载入模型成功')
 
 
 
