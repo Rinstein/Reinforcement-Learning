@@ -38,9 +38,9 @@ class DeepQNetwork:
 
     def __init__(self, env):
         self.replay_memory_store = deque()
-        self.state_dim = env.observation_space.shape[0]
-        self.action_dim = env.action_space.n
-        self.action_list = np.identity(self.action_dim)
+        self.state_dim = env.observation_space.shape[0] #获取观测维度个数，这里是一维向量，因此可以直接
+        self.action_dim = env.action_space.n #获取动作个数
+        self.action_list = np.identity(self.action_dim) #得到单位矩阵
         self.epsilon = self.initial_epsilon  # epsilon_greedy-policy
         self.create_network()
         self.create_training_method()
@@ -90,7 +90,7 @@ class DeepQNetwork:
         self.optimizer = tf.train.AdamOptimizer(0.0005).minimize(self.loss)
 
     def perceive(self, state, action, reward, next_state, done):
-        cur_action = self.action_list[action:action + 1]
+        cur_action = self.action_list[action:action + 1] #获得action的one-hot向量
         self.replay_memory_store.append((state, cur_action[0], reward, next_state, done))
         if len(self.replay_memory_store) > self.memory_size:
             self.replay_memory_store.popleft()
@@ -128,7 +128,9 @@ STEP = 300
 
 
 def main():
-    env = gym.make('CartPole-v0')
+    #env = gym.make('CartPole-v0')
+    #env = gym.make('Breakout-ram-v0')
+    env = gym.make('MountainCar-v0')
     agent = DeepQNetwork(env)
     for i in range(EPISODE):
         # if i % 50 == 0:
@@ -136,8 +138,10 @@ def main():
         #     print(i)
         state = env.reset()
         for step in range(STEP):
-            # env.render()
+            env.render()
             action = agent.egreedy_action(state)
+            #action = env.action_space.sample()
+            #action = 2
             next_state, reward, done, _ = env.step(action)
             agent.perceive(state, action, reward, next_state, done)
             state = next_state
@@ -157,7 +161,7 @@ def main():
                         break
             ave_reward = total_reward / TEST
             print('episode: ', i, 'Evaluation Average Reward:', ave_reward)
-            if ave_reward >= 200:
+            if ave_reward >= 300:
                 break
     # agent.print_loss()
 

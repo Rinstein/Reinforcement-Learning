@@ -110,7 +110,7 @@ class DQN():
             #计算更新yi
             r = t[3]
             if not t[4]:
-                r = r + self.gamma*max(self.target_net.predict([[t[2]]])[0])
+                r = r + self.gamma*max(self.q_net.predict([[t[2]]])[0])
             y = self.q_net.predict([[t[0]]])[0]
             y[t[1]] = r
             yi.append(y)
@@ -129,7 +129,7 @@ class DQN():
         #print(input_data,'----',yi)
 
         #if self.train_step % 20 == 0:
-        print("  loss= "+str(metrics))
+        #print("  loss= "+str(metrics))
         # time.sleep(2)
         self.train_step = self.train_step + 1
         #一段训练时间进行网络参数替换
